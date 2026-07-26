@@ -17,3 +17,6 @@ class ScenarioManager:
 
     def get(self):
         return self.current
+
+
+scenario_manager = ScenarioManager()

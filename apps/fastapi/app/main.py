@@ -4,6 +4,8 @@ from fastapi import FastAPI
 
 from .api import router
 
+from .scenario import Scenario, scenario_manager
+
 logger = logging.getLogger("uvicorn.error")
 
 app = FastAPI()
@@ -13,6 +15,7 @@ app.include_router(router)
 
 @app.on_event("startup")
 async def startup():
+    scenario_manager.set(Scenario.MODEL_NOT_LOADED)
     logger.info("Loading AI models...")
     logger.info("Loaded model sentiment-v1")
     logger.info("Loaded model embeddings-v2")

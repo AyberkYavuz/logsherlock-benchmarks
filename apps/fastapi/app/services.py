@@ -2,6 +2,7 @@ import logging
 import time
 
 from .models import ModelInfo, PredictionResponse
+from .scenario import Scenario, scenario_manager
 
 logger = logging.getLogger("uvicorn.error")
 
@@ -28,7 +29,7 @@ class InferenceService:
         return models
 
     def predict(self, model: str, text: str) -> PredictionResponse:
-        logger.info(f"Prediction request received model={model}")
+        logger.info("Prediction request received model=%s", model)
         logger.info("Validating model '%s'", model)
 
         if model not in self._models:
@@ -38,6 +39,15 @@ class InferenceService:
         logger.info("Starting inference using model '%s'", model)
 
         start = time.perf_counter()
+
+        scenario = scenario_manager.get()
+
+        if scenario == Scenario.MODEL_NOT_LOADED:
+            raise RuntimeError(f"Model not loaded: {model}")
+
+        if scenario == Scenario.INFERENCE_TIMEOUT:
+            time.sleep(5)
+            raise TimeoutError(f"Inference timeout exceeded for model: {model}")
 
         # Simulate inference
         time.sleep(0.12)

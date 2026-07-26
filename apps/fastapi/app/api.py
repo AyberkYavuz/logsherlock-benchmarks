@@ -34,6 +34,14 @@ def predict(request: PredictionRequest):
         logger.error(str(exc))
         raise HTTPException(status_code=404, detail=str(exc))
 
+    except RuntimeError as exc:
+        logger.exception(str(exc))
+        raise HTTPException(status_code=503, detail=str(exc))
+
+    except TimeoutError as exc:
+        logger.exception(str(exc))
+        raise HTTPException(status_code=504, detail=str(exc))
+
 
 @router.post("/reload-model")
 def reload_model(request: ReloadModelRequest):
