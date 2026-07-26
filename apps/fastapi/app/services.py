@@ -29,7 +29,7 @@ class InferenceService:
         return models
 
     def predict(self, model: str, text: str) -> PredictionResponse:
-        logger.info("Prediction request received model=%s", model)
+        logger.info("Prediction request received model=%s text_length=%d", model, len(text))
         logger.info("Validating model '%s'", model)
 
         if model not in self._models:
