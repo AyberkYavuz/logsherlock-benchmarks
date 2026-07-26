@@ -59,6 +59,10 @@ class InferenceService:
         )
 
     def reload_model(self, model: str):
+        if model not in self._models:
+            logger.error("Unknown model '%s'", model)
+            raise ValueError(f"Unknown model: {model}")
+
         logger.warning("Reloading model '%s'", model)
 
         time.sleep(0.5)
