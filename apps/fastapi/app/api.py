@@ -1,48 +1,50 @@
 import logging
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
-from .models import PredictionRequest
-from .services import InferenceService
+from .models import PredictionRequest, ReloadModelRequest
+from .services import inference_service
 
-logger = logging.getLogger("api")
+logger = logging.getLogger("uvicorn.error")
 
 router = APIRouter()
 
 
 @router.get("/health")
 def health():
-
-    logger.info("Health check")
+    logger.info("Health check requested")
 
     return {"status": "healthy"}
 
 
 @router.get("/models")
 def models():
-
-    logger.info("Fetching models")
-
-    return InferenceService.available_models()
+    return inference_service.available_models()
 
 
 @router.post("/predict")
 def predict(request: PredictionRequest):
+    try:
+        return inference_service.predict(
+            model=request.model,
+            text=request.text,
+        )
 
-    logger.info("Prediction request received")
-
-    result = InferenceService.predict(request.text)
-
-    logger.info("Prediction request completed")
-
-    return result
+    except ValueError as exc:
+        logger.error(str(exc))
+        raise HTTPException(status_code=404, detail=str(exc))
 
 
 @router.post("/reload-model")
-def reload_model():
+def reload_model(request: ReloadModelRequest):
+    try:
+        inference_service.reload_model(request.model)
 
-    logger.info("Reload model endpoint called")
+        return {
+            "status": "success",
+            "message": f"Model '{request.model}' reloaded successfully.",
+        }
 
-    InferenceService.reload_model()
-
-    return {"status": "ok"}
+    except ValueError as exc:
+        logger.error(str(exc))
+        raise HTTPException(status_code=404, detail=str(exc))
