@@ -15,3 +15,7 @@ class PredictionResponse(BaseModel):
 class ModelInfo(BaseModel):
     name: str
     status: str
+
+
+class ReloadModelRequest(BaseModel):
+    model: str
