@@ -28,7 +28,7 @@ class InferenceService:
         return models
 
     def predict(self, model: str, text: str) -> PredictionResponse:
-        logger.info("Prediction request received")
+        logger.info(f"Prediction request received model={model}")
         logger.info("Validating model '%s'", model)
 
         if model not in self._models:
@@ -63,11 +63,11 @@ class InferenceService:
             logger.error("Unknown model '%s'", model)
             raise ValueError(f"Unknown model: {model}")
 
-        logger.warning("Reloading model '%s'", model)
+        logger.warning(f"Reloading model '{model}'")
 
         time.sleep(0.5)
 
-        logger.info("Model '%s' reloaded successfully", model)
+        logger.info(f"Model '{model}' reloaded successfully")
 
 
 inference_service = InferenceService()
