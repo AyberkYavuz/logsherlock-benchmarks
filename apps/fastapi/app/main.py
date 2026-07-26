@@ -1,54 +1,25 @@
 import logging
-import logging.config
 
 from fastapi import FastAPI
 
 from .api import router
 
+logger = logging.getLogger("uvicorn.error")
 
-LOGGING_CONFIG = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "default": {
-            "format": (
-                "%(asctime)s | "
-                "%(levelname)-8s | "
-                "%(name)-15s | "
-                "%(message)s"
-            ),
-            "datefmt": "%Y-%m-%d %H:%M:%S",
-        },
-    },
-    "handlers": {
-        "console": {
-            "formatter": "default",
-            "class": "logging.StreamHandler",
-        },
-    },
-    "root": {
-        "handlers": ["console"],
-        "level": "INFO",
-    },
-}
-
-
-logging.config.dictConfig(LOGGING_CONFIG)
-
-logger = logging.getLogger("app")
-
-app = FastAPI(title="LogSherlock Benchmark AI Service")
+app = FastAPI()
 
 app.include_router(router)
 
 
 @app.on_event("startup")
-def startup():
-
-    logger.info("Application startup")
+async def startup():
+    logger.info("Loading AI models...")
+    logger.info("Loaded model sentiment-v1")
+    logger.info("Loaded model embeddings-v2")
+    logger.info("Initializing inference engine...")
+    logger.info("Inference service ready")
 
 
 @app.on_event("shutdown")
-def shutdown():
-
+async def shutdown():
     logger.info("Application shutdown")
