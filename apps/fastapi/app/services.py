@@ -1,48 +1,69 @@
 import logging
-import random
 import time
 
-logger = logging.getLogger("ai-service")
+from .models import ModelInfo, PredictionResponse
+
+logger = logging.getLogger("uvicorn.error")
 
 
 class InferenceService:
+    """Simple AI inference simulation."""
 
-    MODEL_NAME = "sentiment-v1"
+    def __init__(self):
+        self._models = {
+            "sentiment-v1": "loaded",
+            "embeddings-v2": "loaded",
+        }
 
-    @classmethod
-    def predict(cls, text: str):
+    def available_models(self) -> list[ModelInfo]:
+        logger.info("Fetching available models")
 
-        logger.info("Starting inference using model=%s", cls.MODEL_NAME)
+        models = [
+            ModelInfo(name=name, status=status)
+            for name, status in self._models.items()
+        ]
+
+        logger.info("Returning %d available models", len(models))
+
+        return models
+
+    def predict(self, model: str, text: str) -> PredictionResponse:
+        logger.info("Prediction request received")
+        logger.info("Validating model '%s'", model)
+
+        if model not in self._models:
+            logger.error("Unknown model '%s'", model)
+            raise ValueError(f"Unknown model: {model}")
+
+        logger.info("Starting inference using model '%s'", model)
 
         start = time.perf_counter()
 
-        time.sleep(random.uniform(0.05, 0.2))
+        # Simulate inference
+        time.sleep(0.12)
 
-        latency = int((time.perf_counter() - start) * 1000)
+        latency_ms = int((time.perf_counter() - start) * 1000)
 
-        logger.info("Inference completed latency_ms=%s", latency)
+        logger.info(
+            "Inference completed model=%s latency_ms=%d",
+            model,
+            latency_ms,
+        )
 
-        return {
-            "label": random.choice(["positive", "negative", "neutral"]),
-            "confidence": round(random.uniform(0.90, 0.99), 2),
-        }
+        logger.info("Prediction request completed")
 
-    @classmethod
-    def available_models(cls):
+        return PredictionResponse(
+            label="positive",
+            confidence=0.98,
+            latency_ms=latency_ms,
+        )
 
-        logger.info("Listing available models")
+    def reload_model(self, model: str):
+        logger.warning("Reloading model '%s'", model)
 
-        return [
-            cls.MODEL_NAME,
-            "emotion-v2",
-            "topic-v1",
-        ]
+        time.sleep(0.5)
 
-    @classmethod
-    def reload_model(cls):
+        logger.info("Model '%s' reloaded successfully", model)
 
-        logger.warning("Reloading model=%s", cls.MODEL_NAME)
 
-        time.sleep(1)
-
-        logger.info("Model reloaded successfully")
+inference_service = InferenceService()
