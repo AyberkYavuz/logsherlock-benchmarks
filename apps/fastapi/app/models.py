@@ -19,3 +19,8 @@ class ModelInfo(BaseModel):
 
 class ReloadModelRequest(BaseModel):
     model: str
+
+
+class ScenarioRequest(BaseModel):
+    scenario: str
+
