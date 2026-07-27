@@ -1,3 +1,4 @@
+import random
 import time
 
 import httpx
@@ -6,58 +7,114 @@ BASE_URL = "http://127.0.0.1:8000"
 
 client = httpx.Client(timeout=10.0)
 
+print("=== Starting normal benchmark dataset generation ===")
+
+# ---------------------------------------------------------
+# Initial startup checks
+# ---------------------------------------------------------
+
 print("Health check...")
 client.get(f"{BASE_URL}/health")
 
-time.sleep(0.3)
+time.sleep(0.5)
 
-print("Fetching models...")
+print("Fetching available models...")
 client.get(f"{BASE_URL}/models")
 
-time.sleep(0.3)
+time.sleep(0.5)
 
-texts = [
-    "I love LogSherlock.",
-    "FastAPI is awesome.",
-    "The prediction looks good.",
-    "Machine learning is fun.",
-    "LangGraph is powerful.",
-    "Today's weather is amazing.",
-    "The deployment completed successfully.",
-    "Everything looks healthy.",
-    "Generate another prediction.",
-    "AI engineering is exciting.",
-]
+# ---------------------------------------------------------
+# First prediction burst
+# ---------------------------------------------------------
 
-print("Generating predictions...")
+print("Generating prediction burst #1")
 
-for i in range(5):
+for i in range(30):
     client.post(
         f"{BASE_URL}/predict",
         json={
             "model": "sentiment-v1",
             "text": f"Benchmark request #{i}",
-        }
+        },
     )
-    time.sleep(0.2)
+
+    time.sleep(random.uniform(0.15, 0.35))
+
+# ---------------------------------------------------------
+# Health check
+# ---------------------------------------------------------
+
+print("Health check...")
+client.get(f"{BASE_URL}/health")
+
+time.sleep(0.5)
+
+# ---------------------------------------------------------
+# Second prediction burst
+# ---------------------------------------------------------
+
+print("Generating prediction burst #2")
+
+for i in range(30, 50):
+    client.post(
+        f"{BASE_URL}/predict",
+        json={
+            "model": "sentiment-v1",
+            "text": f"Benchmark request #{i}",
+        },
+    )
+
+    time.sleep(random.uniform(0.15, 0.35))
+
+# ---------------------------------------------------------
+# Administrative operation
+# ---------------------------------------------------------
 
 print("Reloading model...")
 
 client.post(
     f"{BASE_URL}/reload-model",
     json={
-        "model": "sentiment-v1"
+        "model": "sentiment-v1",
     },
 )
 
-time.sleep(0.5)
+time.sleep(1)
 
-print("Checking models again...")
+# ---------------------------------------------------------
+# Service verification
+# ---------------------------------------------------------
+
+print("Checking models...")
 client.get(f"{BASE_URL}/models")
 
-time.sleep(0.3)
+print("Health check...")
+client.get(f"{BASE_URL}/health")
+
+time.sleep(0.5)
+
+# ---------------------------------------------------------
+# Final prediction burst
+# ---------------------------------------------------------
+
+print("Generating prediction burst #3")
+
+for i in range(50, 65):
+    client.post(
+        f"{BASE_URL}/predict",
+        json={
+            "model": "sentiment-v1",
+            "text": f"Benchmark request #{i}",
+        },
+    )
+
+    time.sleep(random.uniform(0.15, 0.35))
+
+# ---------------------------------------------------------
+# Final health check
+# ---------------------------------------------------------
 
 print("Final health check...")
 client.get(f"{BASE_URL}/health")
 
-print("Done.")
+print("=== Dataset generation completed ===")
