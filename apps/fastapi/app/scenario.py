@@ -12,7 +12,7 @@ class ScenarioManager:
     def __init__(self):
         self.current = Scenario.NORMAL
 
-    def set(self, scenario):
+    def set(self, scenario: Scenario):
         self.current = scenario
 
     def get(self):
