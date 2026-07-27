@@ -79,5 +79,20 @@ class InferenceService:
 
         logger.info(f"Model '{model}' reloaded successfully")
 
+    def set_scenario(self, scenario: Scenario):
+        previous = scenario_manager.get()
+
+        if previous == scenario:
+            logger.info("Scenario already '%s'", scenario.value)
+            return
+
+        logger.warning(
+            "Scenario changed from %s to %s",
+            previous.value,
+            scenario.value,
+        )
+
+        scenario_manager.set(scenario)
+
 
 inference_service = InferenceService()
