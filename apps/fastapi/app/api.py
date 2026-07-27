@@ -4,6 +4,8 @@ from fastapi import APIRouter, HTTPException
 
 from .models import PredictionRequest, ReloadModelRequest
 from .services import inference_service
+from .models import ScenarioRequest
+from .scenario import Scenario
 
 logger = logging.getLogger("uvicorn.error")
 
@@ -56,3 +58,22 @@ def reload_model(request: ReloadModelRequest):
     except ValueError as exc:
         logger.error(str(exc))
         raise HTTPException(status_code=404, detail=str(exc))
+
+
+@router.post("/scenario")
+def change_scenario(request: ScenarioRequest):
+    try:
+        scenario = Scenario(request.scenario)
+
+    except ValueError:
+        raise HTTPException(
+            status_code=400,
+            detail="Unknown scenario",
+        )
+
+    inference_service.set_scenario(scenario)
+
+    return {
+        "status": "success",
+        "scenario": scenario.value,
+    }
