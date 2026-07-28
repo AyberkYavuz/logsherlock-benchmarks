@@ -1,7 +1,7 @@
 export interface Booking {
   bookingId: string;
+  customerId: string;
   hotelId: string;
-  guestName: string;
   nights: number;
   status: "confirmed" | "cancelled";
 }
