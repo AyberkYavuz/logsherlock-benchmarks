@@ -1,15 +1,13 @@
-import { logger } from "../logger/logger";
+import { Logger } from "pino";
 import { hotels } from "../data/hotels";
 import { Hotel } from "../models/hotel";
 import { scenarioManager } from "../scenario/scenario-manager";
 import { Scenario } from "../scenario/scenario";
 
-const hotelLogger = logger.child({
-  service: "hotel",
-});
 
 class HotelService {
-  public listHotels(): ReadonlyArray<Hotel> {
+  public listHotels(requestLogger: Logger): ReadonlyArray<Hotel> {
+    const hotelLogger = requestLogger.child({service: "hotel"});
     hotelLogger.info(
       {
         event: "hotel_catalog_requested",
@@ -21,7 +19,8 @@ class HotelService {
     return hotels;
   }
 
-  public checkAvailability(hotelId: string): Hotel {
+  public checkAvailability(requestLogger: Logger, hotelId: string): Hotel {
+    const hotelLogger = requestLogger.child({service:"hotel"});
     hotelLogger.info(
       {
         event: "availability_check_started",

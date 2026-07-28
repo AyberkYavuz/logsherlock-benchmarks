@@ -1,14 +1,13 @@
-import { logger } from "../logger/logger";
+import { Logger } from "pino";
 
-const notificationLogger = logger.child({
-  service: "notification",
-});
 
 class NotificationService {
   public sendConfirmation(
+    requestLogger: Logger,
     bookingId: string,
     customerId: string,
   ): void {
+    const notificationLogger = requestLogger.child({service:"notification"});
     notificationLogger.info(
       {
         event: "confirmation_sent",

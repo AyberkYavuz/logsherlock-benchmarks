@@ -1,13 +1,11 @@
-import { logger } from "../logger/logger";
+import { Logger } from "pino";
 import { scenarioManager } from "../scenario/scenario-manager";
 import { Scenario } from "../scenario/scenario";
 
-const paymentLogger = logger.child({
-  service: "payment",
-});
 
 class PaymentService {
-  public authorizePayment(bookingId: string): void {
+  public authorizePayment(requestLogger: Logger, bookingId: string): void {
+    const paymentLogger = requestLogger.child({service:"payment"});
     paymentLogger.info(
       {
         event: "payment_started",
