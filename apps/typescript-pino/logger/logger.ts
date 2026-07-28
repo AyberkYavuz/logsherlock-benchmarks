@@ -8,12 +8,4 @@ export const logger = pino({
   base: {
     application: "booking-benchmark",
   },
-
-  formatters: {
-    level(label) {
-      return {
-        level: label,
-      };
-    },
-  },
 });
