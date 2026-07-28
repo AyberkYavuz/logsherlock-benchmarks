@@ -26,6 +26,8 @@ bookingRouter.post("/", (req, res) => {
       "Booking request failed",
     );
 
+    req.logger.error({event: "booking_workflow_failed"}, "Booking workflow failed");
+
     res.status(503).json({
       error: error instanceof Error ? error.message : "Unknown error",
     });

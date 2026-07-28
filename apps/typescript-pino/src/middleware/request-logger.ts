@@ -11,6 +11,8 @@ export function requestLoggerMiddleware(
     reqId: req.reqId,
   });
 
+  const start = Date.now();
+
   req.logger.info(
     {
       event: "http_request_started",
@@ -21,12 +23,14 @@ export function requestLoggerMiddleware(
   );
 
   res.on("finish", () => {
+    const durationMs = Date.now() - start;
     req.logger.info(
       {
         event: "http_request_completed",
         method: req.method,
         url: req.originalUrl,
         statusCode: res.statusCode,
+        durationMs
       },
       "Request completed",
     );

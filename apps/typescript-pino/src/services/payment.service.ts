@@ -5,11 +5,10 @@ import { Scenario } from "../scenario/scenario";
 
 class PaymentService {
   public authorizePayment(requestLogger: Logger, bookingId: string): void {
-    const paymentLogger = requestLogger.child({service:"payment"});
+    const paymentLogger = requestLogger.child({component:"payment"});
     paymentLogger.info(
       {
-        event: "payment_started",
-        bookingId,
+        event: "payment_started"
       },
       "Authorizing payment",
     );
@@ -20,7 +19,6 @@ class PaymentService {
       paymentLogger.error(
         {
           event: "payment_provider_down",
-          bookingId,
         },
         "Payment provider unavailable",
       );
@@ -31,8 +29,7 @@ class PaymentService {
     if (scenario === Scenario.PAYMENT_TIMEOUT) {
       paymentLogger.error(
         {
-          event: "payment_timeout",
-          bookingId,
+          event: "payment_timeout"
         },
         "Payment request timed out",
       );
@@ -43,7 +40,6 @@ class PaymentService {
     paymentLogger.info(
       {
         event: "payment_authorized",
-        bookingId,
       },
       "Payment authorized",
     );

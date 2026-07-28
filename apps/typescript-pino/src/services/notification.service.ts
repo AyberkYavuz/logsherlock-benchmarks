@@ -7,12 +7,10 @@ class NotificationService {
     bookingId: string,
     customerId: string,
   ): void {
-    const notificationLogger = requestLogger.child({service:"notification"});
+    const notificationLogger = requestLogger.child({component:"notification"});
     notificationLogger.info(
       {
-        event: "confirmation_sent",
-        bookingId,
-        customerId,
+        event: "confirmation_sent"
       },
       "Booking confirmation sent",
     );
