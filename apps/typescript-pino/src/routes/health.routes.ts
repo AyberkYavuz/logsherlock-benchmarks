@@ -2,7 +2,7 @@ import { Router } from "express";
 
 export const healthRouter = Router();
 
-healthRouter.get("/health", (req, res) => {
+healthRouter.get("/", (req, res) => {
   req.logger.info(
     {
       event: "health_check",
