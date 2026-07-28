@@ -1,6 +1,6 @@
 import express from "express";
 
-import { healthRouter } from "./routes/health.routes.js";
+import { healthRouter } from "./routes/health.routes";
 import { requestIdMiddleware } from "./middleware/request-id.js";
 import { requestLoggerMiddleware } from "./middleware/request-logger.js";
 
