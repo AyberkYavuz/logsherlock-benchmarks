@@ -16,20 +16,52 @@ bookingRouter.post("/", (req, res) => {
       body.nights,
     );
 
-    res.status(201).json(booking);
+    return res.status(201).json(booking);
   } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Unknown error";
+
     req.logger.error(
       {
         event: "booking_failed",
-        error: error instanceof Error ? error.message : String(error),
+        error: message,
       },
       "Booking request failed",
     );
 
-    req.logger.error({event: "booking_workflow_failed"}, "Booking workflow failed");
+    req.logger.error(
+      {
+        event: "booking_workflow_failed",
+      },
+      "Booking workflow failed",
+    );
 
-    res.status(503).json({
-      error: error instanceof Error ? error.message : "Unknown error",
+    if (message === "No rooms available") {
+      return res.status(409).json({
+        error: message,
+      });
+    }
+
+    if (message === "Payment provider unavailable") {
+      return res.status(503).json({
+        error: message,
+      });
+    }
+
+    if (message === "Payment timeout") {
+      return res.status(504).json({
+        error: message,
+      });
+    }
+
+    if (message.startsWith("Unknown hotel")) {
+      return res.status(404).json({
+        error: message,
+      });
+    }
+
+    return res.status(500).json({
+      error: message,
     });
   }
 });
