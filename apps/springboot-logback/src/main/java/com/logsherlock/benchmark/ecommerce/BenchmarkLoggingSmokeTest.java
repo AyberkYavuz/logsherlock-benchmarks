@@ -1,5 +1,6 @@
 package com.logsherlock.benchmark.ecommerce;
 
+import com.logsherlock.benchmark.ecommerce.state.BenchmarkState;
 import com.logsherlock.benchmark.ecommerce.logging.BenchmarkLogContext;
 import com.logsherlock.benchmark.ecommerce.logging.BenchmarkLogger;
 import com.logsherlock.benchmark.ecommerce.logging.ComponentName;
@@ -19,9 +20,13 @@ import org.springframework.stereotype.Component;
 public class BenchmarkLoggingSmokeTest implements CommandLineRunner {
 
     private final BenchmarkLogger benchmarkLogger;
+    private final BenchmarkState benchmarkState;
 
-    public BenchmarkLoggingSmokeTest(BenchmarkLogger benchmarkLogger) {
+    public BenchmarkLoggingSmokeTest(
+        BenchmarkLogger benchmarkLogger,
+        BenchmarkState benchmarkState) {
         this.benchmarkLogger = benchmarkLogger;
+        this.benchmarkState = benchmarkState;
     }
 
     @Override
@@ -151,5 +156,11 @@ public class BenchmarkLoggingSmokeTest implements CommandLineRunner {
                 .component(ComponentName.WORKFLOW)
                 .build();
         benchmarkLogger.log(LogEvent.ORDER_COMPLETED, orderCompleted, "Order completed successfully");
+
+        System.out.println("========== PRODUCTS ==========");
+        benchmarkState.getProducts().values().forEach(System.out::println);
+
+        System.out.println("========== CUSTOMERS ==========");
+        benchmarkState.getCustomers().values().forEach(System.out::println);
     }
 }
