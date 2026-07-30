@@ -1,0 +1,12 @@
+<dependencies>
+
+    <!-- REST API -->
+    spring-boot-starter-web
+
+    <!-- Validation -->
+    spring-boot-starter-validation
+
+    <!-- Testing -->
+    spring-boot-starter-test
+
+</dependencies>
