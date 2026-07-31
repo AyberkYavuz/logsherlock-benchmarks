@@ -1,5 +1,9 @@
 package com.logsherlock.benchmark.ecommerce.service;
 
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 
 import com.logsherlock.benchmark.ecommerce.logging.BenchmarkLogContext;
@@ -94,6 +98,32 @@ public class InventoryService {
                         + " from order " + order.getOrderId()
                         + ", " + product.getAvailableQuantity() + " available");
         return product;
+    }
+
+    /**
+     * Returns every seeded product, ordered by identifier.
+     *
+     * <p>The returned list is an immutable copy: callers cannot reach the store
+     * through it.</p>
+     *
+     * @return all products
+     */
+    public List<Product> findAllProducts() {
+        return benchmarkState.getProducts().values().stream()
+                .sorted(Comparator.comparing(Product::getProductId))
+                .toList();
+    }
+
+    /**
+     * Looks up a single product.
+     *
+     * @param productId the product to look up
+     * @return the product, or {@link Optional#empty()} if there is none
+     */
+    public Optional<Product> findProductById(String productId) {
+        return productId == null
+                ? Optional.empty()
+                : Optional.ofNullable(benchmarkState.getProducts().get(productId));
     }
 
     private Product requireProduct(Order order) {

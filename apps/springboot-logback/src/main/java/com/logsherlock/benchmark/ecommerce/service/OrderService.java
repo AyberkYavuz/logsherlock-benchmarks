@@ -1,6 +1,9 @@
 package com.logsherlock.benchmark.ecommerce.service;
 
 import java.time.Instant;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -182,6 +185,32 @@ public class OrderService {
         benchmarkLogger.log(LogEvent.ORDER_CANCELLED, context(reqId, traceId, order, ComponentName.WORKFLOW),
                 "Order " + orderId + " cancelled: " + reason);
         return order;
+    }
+
+    /**
+     * Returns every stored order, ordered by identifier.
+     *
+     * <p>The returned list is an immutable copy: callers cannot reach the store
+     * through it.</p>
+     *
+     * @return all orders
+     */
+    public List<Order> findAllOrders() {
+        return benchmarkState.getOrders().values().stream()
+                .sorted(Comparator.comparing(Order::getOrderId))
+                .toList();
+    }
+
+    /**
+     * Looks up a single order.
+     *
+     * @param orderId the order to look up
+     * @return the order, or {@link Optional#empty()} if there is none
+     */
+    public Optional<Order> findOrderById(String orderId) {
+        return orderId == null
+                ? Optional.empty()
+                : Optional.ofNullable(benchmarkState.getOrders().get(orderId));
     }
 
     private String findRejectionReason(Order order) {

@@ -1,5 +1,9 @@
 package com.logsherlock.benchmark.ecommerce.service;
 
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 
 import com.logsherlock.benchmark.ecommerce.logging.BenchmarkLogContext;
@@ -96,6 +100,32 @@ public class ShippingService {
                         + " delayed by " + delayHours + "h at carrier " + shipment.getCarrier()
                         + ": " + reason);
         return shipment;
+    }
+
+    /**
+     * Returns every stored shipment, ordered by identifier.
+     *
+     * <p>The returned list is an immutable copy: callers cannot reach the store
+     * through it.</p>
+     *
+     * @return all shipments
+     */
+    public List<Shipment> findAllShipments() {
+        return benchmarkState.getShipments().values().stream()
+                .sorted(Comparator.comparing(Shipment::getShipmentId))
+                .toList();
+    }
+
+    /**
+     * Looks up a single shipment.
+     *
+     * @param shipmentId the shipment to look up
+     * @return the shipment, or {@link Optional#empty()} if there is none
+     */
+    public Optional<Shipment> findShipmentById(String shipmentId) {
+        return shipmentId == null
+                ? Optional.empty()
+                : Optional.ofNullable(benchmarkState.getShipments().get(shipmentId));
     }
 
     private Shipment storeShipment(Order order, ShipmentStatus status) {

@@ -1,6 +1,9 @@
 package com.logsherlock.benchmark.ecommerce.service;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -94,6 +97,32 @@ public class PaymentService {
         benchmarkLogger.log(LogEvent.PAYMENT_DECLINED, context(reqId, traceId, order, ComponentName.PROVIDER),
                 "Payment " + payment.getPaymentId() + " declined for order " + order.getOrderId() + ": " + reason);
         return payment;
+    }
+
+    /**
+     * Returns every stored payment, ordered by identifier.
+     *
+     * <p>The returned list is an immutable copy: callers cannot reach the store
+     * through it.</p>
+     *
+     * @return all payments
+     */
+    public List<Payment> findAllPayments() {
+        return benchmarkState.getPayments().values().stream()
+                .sorted(Comparator.comparing(Payment::getPaymentId))
+                .toList();
+    }
+
+    /**
+     * Looks up a single payment.
+     *
+     * @param paymentId the payment to look up
+     * @return the payment, or {@link Optional#empty()} if there is none
+     */
+    public Optional<Payment> findPaymentById(String paymentId) {
+        return paymentId == null
+                ? Optional.empty()
+                : Optional.ofNullable(benchmarkState.getPayments().get(paymentId));
     }
 
     private Payment requestPayment(String reqId, String traceId, Order order) {
