@@ -1,6 +1,7 @@
 package com.logsherlock.benchmark.ecommerce.state;
 
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import com.logsherlock.benchmark.ecommerce.model.Customer;
@@ -14,9 +15,17 @@ import com.logsherlock.benchmark.ecommerce.util.IdGenerator;
  * that later phases always start from the same, deterministic catalogue. It
  * deliberately creates no orders, performs no business logic and emits no log
  * output — it is purely initial data.</p>
+ *
+ * <p>Ordered first among the {@link CommandLineRunner} beans: every other runner
+ * expects the catalogue to already exist, so the seed data must be in place
+ * before any of them execute.</p>
  */
 @Component
+@Order(SeedDataLoader.ORDER)
 public class SeedDataLoader implements CommandLineRunner {
+
+    /** Execution order of this runner; the lowest value in the application. */
+    public static final int ORDER = 0;
 
     private final BenchmarkState benchmarkState;
     private final IdGenerator idGenerator;
