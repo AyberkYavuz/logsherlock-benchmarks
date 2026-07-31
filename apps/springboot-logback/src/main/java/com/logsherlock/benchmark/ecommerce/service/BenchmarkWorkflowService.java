@@ -20,10 +20,10 @@ import com.logsherlock.benchmark.ecommerce.util.IdGenerator;
  *
  * <p>{@link #runScenario(BenchmarkScenario)} branches once on the requested
  * scenario; each branch is a straight-line sequence of service calls. Scenario
- * outcomes are produced only by the inputs each branch supplies (for example an
- * order quantity that exceeds the available stock), never by randomness, timing
- * or failure injection, so a given scenario always yields the same log
- * sequence.</p>
+ * outcomes are produced only by the fixed inputs each branch supplies (for example
+ * an order quantity that exceeds the seeded stock), never by randomness, timing,
+ * failure injection or the state left behind by an earlier run, so a given scenario
+ * always yields the same log sequence.</p>
  *
  * <p>Later phases reuse this service from REST endpoints, the scenario controller
  * and dataset generation.</p>
@@ -33,6 +33,10 @@ public class BenchmarkWorkflowService {
 
     private static final int DEFAULT_QUANTITY = 1;
     private static final int INVALID_QUANTITY = 0;
+
+    /** Exceeds the seeded stock of every product, so the reservation always reports a shortage. */
+    private static final int OUT_OF_STOCK_QUANTITY = 101;
+
     private static final int SHIPPING_DELAY_HOURS = 48;
 
     private final OrderService orderService;
@@ -127,7 +131,7 @@ public class BenchmarkWorkflowService {
     private Order runOutOfStock() {
         String reqId = idGenerator.nextRequestId();
         String traceId = idGenerator.nextTraceId();
-        Order order = createOrder(reqId, traceId, firstProduct().getAvailableQuantity() + 1);
+        Order order = createOrder(reqId, traceId, OUT_OF_STOCK_QUANTITY);
 
         orderService.validateOrder(reqId, traceId, order.getOrderId());
         inventoryService.reserveInventory(reqId, traceId, order);

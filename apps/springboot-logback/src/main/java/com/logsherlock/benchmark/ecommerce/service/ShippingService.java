@@ -16,10 +16,9 @@ import com.logsherlock.benchmark.ecommerce.util.IdGenerator;
 /**
  * Shipment operations of the benchmark.
  *
- * <p>Owns the {@link Shipment} entity: creation, delivery and the failure state
- * used when the shipping dependency is reported as unavailable. Created shipments
- * are stored in {@link BenchmarkState} and linked back onto the order via its
- * shipment id.</p>
+ * <p>Owns the {@link Shipment} entity: creation and the delayed state. Created
+ * shipments are stored in {@link BenchmarkState} and linked back onto the order via
+ * its shipment id.</p>
  *
  * <p>As with the other services the outcome is always chosen by the caller; no
  * network call, wait or retry happens here.</p>
@@ -96,54 +95,6 @@ public class ShippingService {
                 "Shipment " + shipment.getShipmentId() + " for order " + order.getOrderId()
                         + " delayed by " + delayHours + "h at carrier " + shipment.getCarrier()
                         + ": " + reason);
-        return shipment;
-    }
-
-    /**
-     * Moves the order's shipment to {@link ShipmentStatus#DELIVERED} and emits
-     * {@link LogEvent#SHIPMENT_COMPLETED}.
-     *
-     * @param reqId   the correlating request id
-     * @param traceId the correlating trace id
-     * @param order   the order whose shipment is completed
-     * @return the updated shipment
-     * @throws IllegalArgumentException if the order has no stored shipment
-     */
-    public Shipment completeShipment(String reqId, String traceId, Order order) {
-        Shipment shipment = requireShipment(order);
-        shipment.setStatus(ShipmentStatus.DELIVERED);
-        benchmarkLogger.log(LogEvent.SHIPMENT_COMPLETED, context(reqId, traceId, order, ComponentName.WORKFLOW),
-                "Shipment " + shipment.getShipmentId() + " for order " + order.getOrderId()
-                        + " delivered by " + shipment.getCarrier());
-        return shipment;
-    }
-
-    /**
-     * Marks the order's shipment as {@link ShipmentStatus#FAILED} and emits
-     * {@link LogEvent#SHIPPING_SERVICE_UNAVAILABLE}.
-     *
-     * <p>When the order has no shipment yet — the failure happened before the
-     * shipment could be created — a failed shipment record is stored so the
-     * attempt remains visible in the benchmark state.</p>
-     *
-     * @param reqId   the correlating request id
-     * @param traceId the correlating trace id
-     * @param order   the order whose shipment failed
-     * @param reason  the failure reason, included in the message
-     * @return the failed shipment
-     */
-    public Shipment failShipment(String reqId, String traceId, Order order, String reason) {
-        Shipment shipment = findShipment(order);
-        if (shipment == null) {
-            shipment = storeShipment(order, ShipmentStatus.FAILED);
-        } else {
-            shipment.setStatus(ShipmentStatus.FAILED);
-        }
-
-        benchmarkLogger.log(LogEvent.SHIPPING_SERVICE_UNAVAILABLE,
-                context(reqId, traceId, order, ComponentName.CLIENT),
-                "Shipment " + shipment.getShipmentId() + " for order " + order.getOrderId()
-                        + " failed: " + reason);
         return shipment;
     }
 

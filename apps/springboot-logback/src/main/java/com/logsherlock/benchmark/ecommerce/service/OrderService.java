@@ -166,28 +166,6 @@ public class OrderService {
     }
 
     /**
-     * Moves an order to {@link OrderStatus#FAILED} and emits
-     * {@link LogEvent#ORDER_CANCELLED}.
-     *
-     * <p>Used by callers after a downstream step (inventory, payment, shipping)
-     * has already reported its own failure.</p>
-     *
-     * @param reqId   the correlating request id
-     * @param traceId the correlating trace id
-     * @param orderId the order to fail
-     * @param reason  the human-readable failure reason, included in the message
-     * @return the updated order
-     * @throws IllegalArgumentException if no such order exists
-     */
-    public Order failOrder(String reqId, String traceId, String orderId, String reason) {
-        Order order = requireOrder(orderId);
-        order.setStatus(OrderStatus.FAILED);
-        benchmarkLogger.log(LogEvent.ORDER_CANCELLED, context(reqId, traceId, order, ComponentName.WORKFLOW),
-                "Order " + orderId + " failed: " + reason);
-        return order;
-    }
-
-    /**
      * Moves an order to {@link OrderStatus#CANCELLED} and emits
      * {@link LogEvent#ORDER_CANCELLED}.
      *
@@ -204,17 +182,6 @@ public class OrderService {
         benchmarkLogger.log(LogEvent.ORDER_CANCELLED, context(reqId, traceId, order, ComponentName.WORKFLOW),
                 "Order " + orderId + " cancelled: " + reason);
         return order;
-    }
-
-    /**
-     * Returns a stored order without logging or mutating anything.
-     *
-     * @param orderId the order to look up
-     * @return the stored order
-     * @throws IllegalArgumentException if no such order exists
-     */
-    public Order getOrder(String orderId) {
-        return requireOrder(orderId);
     }
 
     private String findRejectionReason(Order order) {

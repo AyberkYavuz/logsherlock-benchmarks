@@ -25,10 +25,10 @@ import com.logsherlock.benchmark.ecommerce.util.IdGenerator;
  * order — and then applies exactly one deterministic outcome chosen by the
  * caller.</p>
  *
- * <p>The failure methods exist so that later scenarios can reproduce a specific
- * provider behaviour (decline, timeout, outage) without this service ever
- * deciding to fail on its own. Nothing here calls out to a network, sleeps or
- * retries; the "provider" is purely a log-level narrative.</p>
+ * <p>{@link #declinePayment} exists so that a scenario can reproduce a declined
+ * provider response without this service ever deciding to fail on its own.
+ * Nothing here calls out to a network, sleeps or retries; the "provider" is purely
+ * a log-level narrative.</p>
  */
 @Service
 public class PaymentService {
@@ -93,55 +93,6 @@ public class PaymentService {
         payment.setStatus(PaymentStatus.DECLINED);
         benchmarkLogger.log(LogEvent.PAYMENT_DECLINED, context(reqId, traceId, order, ComponentName.PROVIDER),
                 "Payment " + payment.getPaymentId() + " declined for order " + order.getOrderId() + ": " + reason);
-        return payment;
-    }
-
-    /**
-     * Opens a payment for the order and marks it timed out.
-     *
-     * <p>Emits {@link LogEvent#PAYMENT_REQUESTED} followed by
-     * {@link LogEvent#PAYMENT_TIMEOUT}, leaving the payment in
-     * {@link PaymentStatus#FAILED}. The reported timeout is a value used in the
-     * message only; no waiting takes place.</p>
-     *
-     * @param reqId     the correlating request id
-     * @param traceId   the correlating trace id
-     * @param order     the order being paid for
-     * @param timeoutMs the timeout to report in the message
-     * @return the failed payment
-     * @throws IllegalArgumentException if the order references an unknown product
-     */
-    public Payment failPaymentWithTimeout(String reqId, String traceId, Order order, long timeoutMs) {
-        Payment payment = requestPayment(reqId, traceId, order);
-        payment.setStatus(PaymentStatus.FAILED);
-        benchmarkLogger.log(LogEvent.PAYMENT_TIMEOUT, context(reqId, traceId, order, ComponentName.CLIENT),
-                "Payment " + payment.getPaymentId() + " for order " + order.getOrderId()
-                        + " timed out after " + timeoutMs + "ms");
-        return payment;
-    }
-
-    /**
-     * Opens a payment for the order and marks it failed because the provider is
-     * unavailable.
-     *
-     * <p>Emits {@link LogEvent#PAYMENT_REQUESTED} followed by
-     * {@link LogEvent#PAYMENT_PROVIDER_UNAVAILABLE}, leaving the payment in
-     * {@link PaymentStatus#FAILED}.</p>
-     *
-     * @param reqId    the correlating request id
-     * @param traceId  the correlating trace id
-     * @param order    the order being paid for
-     * @param provider the provider name to report in the message
-     * @return the failed payment
-     * @throws IllegalArgumentException if the order references an unknown product
-     */
-    public Payment failPaymentWithProviderUnavailable(String reqId, String traceId, Order order, String provider) {
-        Payment payment = requestPayment(reqId, traceId, order);
-        payment.setStatus(PaymentStatus.FAILED);
-        benchmarkLogger.log(LogEvent.PAYMENT_PROVIDER_UNAVAILABLE,
-                context(reqId, traceId, order, ComponentName.PROVIDER),
-                "Payment provider " + provider + " is unavailable, payment " + payment.getPaymentId()
-                        + " for order " + order.getOrderId() + " could not be processed");
         return payment;
     }
 

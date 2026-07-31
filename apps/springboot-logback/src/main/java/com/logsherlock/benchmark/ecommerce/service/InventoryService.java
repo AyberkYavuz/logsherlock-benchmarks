@@ -17,8 +17,8 @@ import com.logsherlock.benchmark.ecommerce.state.BenchmarkState;
  * <p>Owns the {@code availableQuantity} of the seeded {@link Product} entities in
  * {@link BenchmarkState}. Reservation is plain arithmetic against the stored
  * stock level, so a shortage is a real consequence of the current state rather
- * than an injected failure — a scenario that wants a shortage simply lowers the
- * product's available quantity beforehand.</p>
+ * than an injected failure — a scenario that wants a shortage orders more units
+ * than the seeded catalogue holds.</p>
  */
 @Service
 public class InventoryService {

@@ -12,11 +12,10 @@ import org.springframework.stereotype.Component;
  * Temporary startup smoke test that runs one benchmark workflow.
  *
  * <p>It is a thin entry point only: it delegates to
- * {@link BenchmarkWorkflowService#runScenario(BenchmarkScenario)} with
- * {@link BenchmarkScenario#NORMAL} and then prints the resulting
- * {@link BenchmarkState} counts and the stock level of the ordered product. It
- * contains no orchestration and no business logic; all benchmark logs are emitted
- * by the business services.</p>
+ * {@link BenchmarkWorkflowService#runScenario(BenchmarkScenario)} for one scenario
+ * and then prints the resulting {@link BenchmarkState} counts and the stock level of
+ * the ordered product. It contains no orchestration and no business logic; all
+ * benchmark logs are emitted by the business services.</p>
  *
  * <p>Ordered after {@link SeedDataLoader} so the workflow always finds the seeded
  * customers and products. The Spring {@code @Order} annotation is fully qualified
