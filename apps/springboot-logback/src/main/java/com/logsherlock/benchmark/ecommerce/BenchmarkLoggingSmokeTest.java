@@ -1,166 +1,87 @@
 package com.logsherlock.benchmark.ecommerce;
 
+import com.logsherlock.benchmark.ecommerce.model.Customer;
+import com.logsherlock.benchmark.ecommerce.model.Order;
+import com.logsherlock.benchmark.ecommerce.model.Payment;
+import com.logsherlock.benchmark.ecommerce.model.Product;
+import com.logsherlock.benchmark.ecommerce.model.Shipment;
+import com.logsherlock.benchmark.ecommerce.service.InventoryService;
+import com.logsherlock.benchmark.ecommerce.service.OrderService;
+import com.logsherlock.benchmark.ecommerce.service.PaymentService;
+import com.logsherlock.benchmark.ecommerce.service.ShippingService;
 import com.logsherlock.benchmark.ecommerce.state.BenchmarkState;
-import com.logsherlock.benchmark.ecommerce.logging.BenchmarkLogContext;
-import com.logsherlock.benchmark.ecommerce.logging.BenchmarkLogger;
-import com.logsherlock.benchmark.ecommerce.logging.ComponentName;
-import com.logsherlock.benchmark.ecommerce.logging.LogEvent;
-import com.logsherlock.benchmark.ecommerce.logging.ServiceName;
+import com.logsherlock.benchmark.ecommerce.util.IdGenerator;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 /**
- * Temporary startup smoke test that exercises the {@link BenchmarkLogger}
- * end-to-end (dependency injection, MDC population, log levels and emission).
+ * Temporary startup smoke test that exercises the business service layer
+ * end-to-end.
  *
- * <p>This class is intended to be removed once the logging pipeline has been
+ * <p>It runs a single happy-path order workflow — create, validate, reserve
+ * inventory, authorize payment, create shipment, complete — against the seeded
+ * catalogue, then prints the resulting entities and the {@link BenchmarkState}
+ * counts. All benchmark logs are emitted by the services themselves; this class
+ * only calls them.</p>
+ *
+ * <p>This class is intended to be removed once the business layer has been
  * verified.</p>
  */
 @Component
 public class BenchmarkLoggingSmokeTest implements CommandLineRunner {
 
-    private final BenchmarkLogger benchmarkLogger;
+    private final OrderService orderService;
+    private final InventoryService inventoryService;
+    private final PaymentService paymentService;
+    private final ShippingService shippingService;
     private final BenchmarkState benchmarkState;
+    private final IdGenerator idGenerator;
 
     public BenchmarkLoggingSmokeTest(
-        BenchmarkLogger benchmarkLogger,
-        BenchmarkState benchmarkState) {
-        this.benchmarkLogger = benchmarkLogger;
+            OrderService orderService,
+            InventoryService inventoryService,
+            PaymentService paymentService,
+            ShippingService shippingService,
+            BenchmarkState benchmarkState,
+            IdGenerator idGenerator) {
+        this.orderService = orderService;
+        this.inventoryService = inventoryService;
+        this.paymentService = paymentService;
+        this.shippingService = shippingService;
         this.benchmarkState = benchmarkState;
+        this.idGenerator = idGenerator;
     }
 
     @Override
     public void run(String... args) {
-        BenchmarkLogContext applicationStarted = BenchmarkLogContext.builder()
-                .scenario("normal")
-                .reqId("REQ-1001")
-                .traceId("TRACE-1001")
-                .orderId("ORDER-5001")
-                .customerId("CUSTOMER-42")
-                .productId("PRODUCT-10")
-                .paymentId("PAYMENT-7001")
-                .shipmentId("SHIPMENT-9001")
-                .service(ServiceName.BENCHMARK)
-                .component(ComponentName.APPLICATION)
-                .build();
-        benchmarkLogger.log(LogEvent.APPLICATION_STARTED, applicationStarted, "Application started successfully");
+        String reqId = idGenerator.nextRequestId();
+        String traceId = idGenerator.nextTraceId();
 
-        BenchmarkLogContext orderReceived = BenchmarkLogContext.builder()
-                .scenario("normal")
-                .reqId("REQ-1001")
-                .traceId("TRACE-1001")
-                .orderId("ORDER-5001")
-                .customerId("CUSTOMER-42")
-                .productId("PRODUCT-10")
-                .paymentId("PAYMENT-7001")
-                .shipmentId("SHIPMENT-9001")
-                .service(ServiceName.ORDER)
-                .component(ComponentName.API)
-                .build();
-        benchmarkLogger.log(LogEvent.ORDER_RECEIVED, orderReceived, "Received new customer order");
+        Customer customer = benchmarkState.getCustomers().values().iterator().next();
+        Product product = benchmarkState.getProducts().values().iterator().next();
 
-        BenchmarkLogContext orderValidated = BenchmarkLogContext.builder()
-                .scenario("normal")
-                .reqId("REQ-1001")
-                .traceId("TRACE-1001")
-                .orderId("ORDER-5001")
-                .customerId("CUSTOMER-42")
-                .productId("PRODUCT-10")
-                .paymentId("PAYMENT-7001")
-                .shipmentId("SHIPMENT-9001")
-                .service(ServiceName.ORDER)
-                .component(ComponentName.VALIDATOR)
-                .build();
-        benchmarkLogger.log(LogEvent.ORDER_VALIDATED, orderValidated, "Order validation completed");
+        Order order = orderService.createOrder(reqId, traceId, customer.getCustomerId(), product.getProductId(), 1);
+        orderService.validateOrder(reqId, traceId, order.getOrderId());
+        inventoryService.reserveInventory(reqId, traceId, order);
+        Payment payment = paymentService.authorizePayment(reqId, traceId, order);
+        Shipment shipment = shippingService.createShipment(reqId, traceId, order);
+        orderService.completeOrder(reqId, traceId, order.getOrderId());
 
-        BenchmarkLogContext inventoryCheckStarted = BenchmarkLogContext.builder()
-                .scenario("normal")
-                .reqId("REQ-1001")
-                .traceId("TRACE-1001")
-                .orderId("ORDER-5001")
-                .customerId("CUSTOMER-42")
-                .productId("PRODUCT-10")
-                .paymentId("PAYMENT-7001")
-                .shipmentId("SHIPMENT-9001")
-                .service(ServiceName.INVENTORY)
-                .component(ComponentName.WORKFLOW)
-                .build();
-        benchmarkLogger.log(LogEvent.INVENTORY_CHECK_STARTED, inventoryCheckStarted, "Checking product inventory");
+        System.out.println("========== ORDER ==========");
+        System.out.println(order);
 
-        BenchmarkLogContext inventoryReserved = BenchmarkLogContext.builder()
-                .scenario("normal")
-                .reqId("REQ-1001")
-                .traceId("TRACE-1001")
-                .orderId("ORDER-5001")
-                .customerId("CUSTOMER-42")
-                .productId("PRODUCT-10")
-                .paymentId("PAYMENT-7001")
-                .shipmentId("SHIPMENT-9001")
-                .service(ServiceName.INVENTORY)
-                .component(ComponentName.STORE)
-                .build();
-        benchmarkLogger.log(LogEvent.INVENTORY_RESERVED, inventoryReserved, "Inventory reserved successfully");
+        System.out.println("========== PAYMENT ==========");
+        System.out.println(payment);
 
-        BenchmarkLogContext paymentRequested = BenchmarkLogContext.builder()
-                .scenario("normal")
-                .reqId("REQ-1001")
-                .traceId("TRACE-1001")
-                .orderId("ORDER-5001")
-                .customerId("CUSTOMER-42")
-                .productId("PRODUCT-10")
-                .paymentId("PAYMENT-7001")
-                .shipmentId("SHIPMENT-9001")
-                .service(ServiceName.PAYMENT)
-                .component(ComponentName.PROVIDER)
-                .build();
-        benchmarkLogger.log(LogEvent.PAYMENT_REQUESTED, paymentRequested, "Submitting payment authorization request");
+        System.out.println("========== SHIPMENT ==========");
+        System.out.println(shipment);
 
-        BenchmarkLogContext paymentAuthorized = BenchmarkLogContext.builder()
-                .scenario("normal")
-                .reqId("REQ-1001")
-                .traceId("TRACE-1001")
-                .orderId("ORDER-5001")
-                .customerId("CUSTOMER-42")
-                .productId("PRODUCT-10")
-                .paymentId("PAYMENT-7001")
-                .shipmentId("SHIPMENT-9001")
-                .service(ServiceName.PAYMENT)
-                .component(ComponentName.PROVIDER)
-                .build();
-        benchmarkLogger.log(LogEvent.PAYMENT_AUTHORIZED, paymentAuthorized, "Payment authorized successfully");
+        System.out.println("========== PRODUCT ==========");
+        System.out.println(product);
 
-        BenchmarkLogContext shipmentCreated = BenchmarkLogContext.builder()
-                .scenario("normal")
-                .reqId("REQ-1001")
-                .traceId("TRACE-1001")
-                .orderId("ORDER-5001")
-                .customerId("CUSTOMER-42")
-                .productId("PRODUCT-10")
-                .paymentId("PAYMENT-7001")
-                .shipmentId("SHIPMENT-9001")
-                .service(ServiceName.SHIPPING)
-                .component(ComponentName.WORKFLOW)
-                .build();
-        benchmarkLogger.log(LogEvent.SHIPMENT_CREATED, shipmentCreated, "Shipment created successfully");
-
-        BenchmarkLogContext orderCompleted = BenchmarkLogContext.builder()
-                .scenario("normal")
-                .reqId("REQ-1001")
-                .traceId("TRACE-1001")
-                .orderId("ORDER-5001")
-                .customerId("CUSTOMER-42")
-                .productId("PRODUCT-10")
-                .paymentId("PAYMENT-7001")
-                .shipmentId("SHIPMENT-9001")
-                .service(ServiceName.ORDER)
-                .component(ComponentName.WORKFLOW)
-                .build();
-        benchmarkLogger.log(LogEvent.ORDER_COMPLETED, orderCompleted, "Order completed successfully");
-
-        System.out.println("========== PRODUCTS ==========");
-        benchmarkState.getProducts().values().forEach(System.out::println);
-
-        System.out.println("========== CUSTOMERS ==========");
-        benchmarkState.getCustomers().values().forEach(System.out::println);
+        System.out.println("========== STATE ==========");
+        System.out.println("Orders: " + benchmarkState.getOrders().size());
+        System.out.println("Payments: " + benchmarkState.getPayments().size());
+        System.out.println("Shipments: " + benchmarkState.getShipments().size());
     }
 }
