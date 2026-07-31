@@ -1,6 +1,7 @@
 package com.logsherlock.benchmark.ecommerce;
 
 import com.logsherlock.benchmark.ecommerce.model.Order;
+import com.logsherlock.benchmark.ecommerce.scenario.BenchmarkScenario;
 import com.logsherlock.benchmark.ecommerce.service.BenchmarkWorkflowService;
 import com.logsherlock.benchmark.ecommerce.state.BenchmarkState;
 import com.logsherlock.benchmark.ecommerce.state.SeedDataLoader;
@@ -11,10 +12,11 @@ import org.springframework.stereotype.Component;
  * Temporary startup smoke test that runs one benchmark workflow.
  *
  * <p>It is a thin entry point only: it delegates to
- * {@link BenchmarkWorkflowService#runNormalScenario()} and then prints the
- * resulting {@link BenchmarkState} counts and the stock level of the ordered
- * product. It contains no orchestration and no business logic; all benchmark logs
- * are emitted by the business services.</p>
+ * {@link BenchmarkWorkflowService#runScenario(BenchmarkScenario)} with
+ * {@link BenchmarkScenario#NORMAL} and then prints the resulting
+ * {@link BenchmarkState} counts and the stock level of the ordered product. It
+ * contains no orchestration and no business logic; all benchmark logs are emitted
+ * by the business services.</p>
  *
  * <p>Ordered after {@link SeedDataLoader} so the workflow always finds the seeded
  * customers and products. The Spring {@code @Order} annotation is fully qualified
@@ -39,7 +41,7 @@ public class BenchmarkLoggingSmokeTest implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        Order order = benchmarkWorkflowService.runNormalScenario();
+        Order order = benchmarkWorkflowService.runScenario(BenchmarkScenario.NORMAL);
 
         System.out.println("========== ORDER ==========");
         System.out.println(order);

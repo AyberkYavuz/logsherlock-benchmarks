@@ -1,30 +1,30 @@
 package com.logsherlock.benchmark.ecommerce.scenario;
 
 /**
- * The set of benchmark scenarios the application can operate under.
+ * The set of benchmark scenarios the application can execute.
  *
- * <p>A scenario determines the behaviour (and therefore the shape of the logs)
- * that later phases produce. The active scenario will eventually be switched at
- * runtime through a {@code /scenario} endpoint; this phase only defines the
- * vocabulary.</p>
+ * <p>A scenario selects which path an order takes through the business services
+ * and therefore which sequence of log records a run produces. The outcome depends
+ * only on the selected value: there is no randomness and no time-based
+ * behaviour, so the same scenario always yields the same log sequence.</p>
+ *
+ * <p>Scenarios are executed by
+ * {@code BenchmarkWorkflowService#runScenario(BenchmarkScenario)}.</p>
  */
 public enum BenchmarkScenario {
 
-    /** The healthy baseline: everything succeeds. */
+    /** The healthy baseline: the order is paid, shipped and completed. */
     NORMAL,
 
-    /** The payment provider is unavailable. */
-    PAYMENT_PROVIDER_DOWN,
+    /** Requested stock exceeds what is available, so the order is cancelled. */
+    OUT_OF_STOCK,
 
-    /** Payment authorization exceeds its timeout. */
-    PAYMENT_TIMEOUT,
+    /** The payment is declined, the reservation is rolled back and the order is cancelled. */
+    PAYMENT_DECLINED,
 
-    /** Requested stock is not available. */
-    INVENTORY_SHORTAGE,
+    /** The order fails validation and is rejected before any fulfilment step. */
+    INVALID_ORDER,
 
-    /** The shipping service is unavailable. */
-    SHIPPING_SERVICE_DOWN,
-
-    /** Fraud detection errors out during screening. */
-    FRAUD_DETECTION_FAILURE
+    /** The order completes, but its shipment is delayed. */
+    SHIPPING_DELAY
 }

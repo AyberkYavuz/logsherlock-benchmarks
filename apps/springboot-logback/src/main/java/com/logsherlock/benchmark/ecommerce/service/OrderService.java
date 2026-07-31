@@ -98,10 +98,10 @@ public class OrderService {
      * <p>An order passes when the quantity is positive and both the customer and
      * the product are known. On success the order moves to
      * {@link OrderStatus#VALIDATED} and {@link LogEvent#ORDER_VALIDATED} is
-     * emitted; on rejection the order moves to {@link OrderStatus#FAILED} and
-     * {@link LogEvent#ORDER_CANCELLED} is emitted with the concrete reason. The
-     * outcome depends only on the order's own data, never on the active
-     * scenario.</p>
+     * emitted; on rejection it is handed to
+     * {@link #invalidateOrder(String, String, String, String)} with the concrete
+     * reason. The outcome depends only on the order's own data, never on the
+     * active scenario.</p>
      *
      * @param reqId   the correlating request id
      * @param traceId the correlating trace id
@@ -114,9 +114,7 @@ public class OrderService {
         String rejectionReason = findRejectionReason(order);
 
         if (rejectionReason != null) {
-            order.setStatus(OrderStatus.FAILED);
-            benchmarkLogger.log(LogEvent.ORDER_CANCELLED, context(reqId, traceId, order, ComponentName.VALIDATOR),
-                    "Order " + orderId + " rejected during validation: " + rejectionReason);
+            invalidateOrder(reqId, traceId, orderId, rejectionReason);
             return false;
         }
 
@@ -124,6 +122,29 @@ public class OrderService {
         benchmarkLogger.log(LogEvent.ORDER_VALIDATED, context(reqId, traceId, order, ComponentName.VALIDATOR),
                 "Order " + orderId + " passed validation");
         return true;
+    }
+
+    /**
+     * Moves an order to {@link OrderStatus#INVALID} and emits
+     * {@link LogEvent#ORDER_VALIDATION_FAILED}.
+     *
+     * <p>An invalid order is never fulfilled: no stock is reserved, no payment is
+     * taken and no shipment is created.</p>
+     *
+     * @param reqId   the correlating request id
+     * @param traceId the correlating trace id
+     * @param orderId the order to reject
+     * @param reason  the rejection reason, included in the message
+     * @return the updated order
+     * @throws IllegalArgumentException if no such order exists
+     */
+    public Order invalidateOrder(String reqId, String traceId, String orderId, String reason) {
+        Order order = requireOrder(orderId);
+        order.setStatus(OrderStatus.INVALID);
+        benchmarkLogger.log(LogEvent.ORDER_VALIDATION_FAILED,
+                context(reqId, traceId, order, ComponentName.VALIDATOR),
+                "Order " + orderId + " rejected during validation: " + reason);
+        return order;
     }
 
     /**

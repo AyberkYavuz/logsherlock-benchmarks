@@ -41,6 +41,9 @@ public enum LogEvent {
     /** An order has passed validation. */
     ORDER_VALIDATED(LogLevel.INFO),
 
+    /** An order has been rejected during validation. */
+    ORDER_VALIDATION_FAILED(LogLevel.WARN),
+
     /** An order has been persisted / created. */
     ORDER_CREATED(LogLevel.INFO),
 
@@ -107,6 +110,9 @@ public enum LogEvent {
 
     /** A shipment has been created. */
     SHIPMENT_CREATED(LogLevel.INFO),
+
+    /** A shipment has been created but its dispatch is delayed. */
+    SHIPMENT_DELAYED(LogLevel.WARN),
 
     /** The shipping service is unavailable. */
     SHIPPING_SERVICE_UNAVAILABLE(LogLevel.ERROR),

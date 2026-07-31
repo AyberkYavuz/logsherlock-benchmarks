@@ -14,6 +14,9 @@ public enum OrderStatus {
     /** The order has passed validation and is ready for fulfilment. */
     VALIDATED,
 
+    /** The order was rejected during validation and is not fulfillable. */
+    INVALID,
+
     /** The order has been fully processed. */
     COMPLETED,
 

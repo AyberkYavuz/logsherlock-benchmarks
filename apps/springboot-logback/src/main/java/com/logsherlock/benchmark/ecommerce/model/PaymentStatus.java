@@ -14,7 +14,10 @@ public enum PaymentStatus {
     /** The payment was authorized and settled successfully. */
     AUTHORIZED,
 
-    /** The payment attempt was declined or errored. */
+    /** The payment was declined by the provider. */
+    DECLINED,
+
+    /** The payment attempt errored before an authorization decision was reached. */
     FAILED,
 
     /** The payment was refunded after settlement. */

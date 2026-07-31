@@ -73,6 +73,33 @@ public class ShippingService {
     }
 
     /**
+     * Moves the order's shipment to {@link ShipmentStatus#DELAYED} and emits
+     * {@link LogEvent#SHIPMENT_DELAYED}.
+     *
+     * <p>A delayed shipment still belongs to a fulfillable order: only the
+     * dispatch is held up, so the order itself can still be completed. The
+     * reported delay is a value used in the message only; no waiting takes
+     * place.</p>
+     *
+     * @param reqId       the correlating request id
+     * @param traceId     the correlating trace id
+     * @param order       the order whose shipment is delayed
+     * @param delayHours  the delay to report in the message
+     * @param reason      the delay reason, included in the message
+     * @return the updated shipment
+     * @throws IllegalArgumentException if the order has no stored shipment
+     */
+    public Shipment markShipmentDelayed(String reqId, String traceId, Order order, int delayHours, String reason) {
+        Shipment shipment = requireShipment(order);
+        shipment.setStatus(ShipmentStatus.DELAYED);
+        benchmarkLogger.log(LogEvent.SHIPMENT_DELAYED, context(reqId, traceId, order, ComponentName.CLIENT),
+                "Shipment " + shipment.getShipmentId() + " for order " + order.getOrderId()
+                        + " delayed by " + delayHours + "h at carrier " + shipment.getCarrier()
+                        + ": " + reason);
+        return shipment;
+    }
+
+    /**
      * Moves the order's shipment to {@link ShipmentStatus#DELIVERED} and emits
      * {@link LogEvent#SHIPMENT_COMPLETED}.
      *

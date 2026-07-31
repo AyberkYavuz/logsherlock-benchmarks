@@ -14,6 +14,9 @@ public enum ShipmentStatus {
     /** The shipment has been handed to the carrier. */
     DISPATCHED,
 
+    /** The shipment has been created but its dispatch is delayed. */
+    DELAYED,
+
     /** The shipment has reached the customer. */
     DELIVERED,
 

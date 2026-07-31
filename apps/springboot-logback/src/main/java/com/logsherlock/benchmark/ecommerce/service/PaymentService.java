@@ -79,18 +79,18 @@ public class PaymentService {
      *
      * <p>Emits {@link LogEvent#PAYMENT_REQUESTED} followed by
      * {@link LogEvent#PAYMENT_DECLINED}, leaving the payment in
-     * {@link PaymentStatus#FAILED}.</p>
+     * {@link PaymentStatus#DECLINED}.</p>
      *
      * @param reqId   the correlating request id
      * @param traceId the correlating trace id
      * @param order   the order being paid for
      * @param reason  the decline reason, included in the message
-     * @return the failed payment
+     * @return the declined payment
      * @throws IllegalArgumentException if the order references an unknown product
      */
-    public Payment failPayment(String reqId, String traceId, Order order, String reason) {
+    public Payment declinePayment(String reqId, String traceId, Order order, String reason) {
         Payment payment = requestPayment(reqId, traceId, order);
-        payment.setStatus(PaymentStatus.FAILED);
+        payment.setStatus(PaymentStatus.DECLINED);
         benchmarkLogger.log(LogEvent.PAYMENT_DECLINED, context(reqId, traceId, order, ComponentName.PROVIDER),
                 "Payment " + payment.getPaymentId() + " declined for order " + order.getOrderId() + ": " + reason);
         return payment;
