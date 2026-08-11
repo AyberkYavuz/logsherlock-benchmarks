@@ -6,6 +6,7 @@ import com.logsherlock.benchmark.ecommerce.service.BenchmarkWorkflowService;
 import com.logsherlock.benchmark.ecommerce.state.BenchmarkState;
 import com.logsherlock.benchmark.ecommerce.state.SeedDataLoader;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 /**
@@ -21,10 +22,15 @@ import org.springframework.stereotype.Component;
  * customers and products. The Spring {@code @Order} annotation is fully qualified
  * here because the simple name clashes with the {@link Order} domain model.</p>
  *
+ * <p>Enabled by default. Set {@code benchmark.smoke-test.enabled=false} to skip
+ * it, which dataset generation does so that a generated log file contains only
+ * the scenario that was requested over HTTP, run against untouched seed data.</p>
+ *
  * <p>This class is intended to be removed once the workflow has been
  * verified.</p>
  */
 @Component
+@ConditionalOnProperty(name = "benchmark.smoke-test.enabled", havingValue = "true", matchIfMissing = true)
 @org.springframework.core.annotation.Order(SeedDataLoader.ORDER + 1)
 public class BenchmarkLoggingSmokeTest implements CommandLineRunner {
 
