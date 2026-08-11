@@ -64,13 +64,16 @@ Documentation:
 apps/
 ├── fastapi/
 └── typescript-pino/
+└── springboot-logback/
 
 datasets/
 ├── fastapi/
+└── springboot-logback/
 └── typescript-pino/
 
 docs/
 ├── fastapi.md
+└── springboot-logback/
 └── typescript-pino.md
 
 scripts/
