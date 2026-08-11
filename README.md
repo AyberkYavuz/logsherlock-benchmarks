@@ -41,6 +41,23 @@ Documentation:
 
 * `docs/typescript-pino.md`
 
+---
+
+### Java Springboot E-commerce Application
+
+Java Springboot application that simulates ecommerce backend. It generates realistic structured text and JSON logs for scenarios such as:
+
+* NORMAL
+* INVALID_ORDER
+* OUT_OF_STOCK
+* PAYMENT_DECLINED
+* SHIPPING_DELAY
+Documentation:
+
+* `docs/springboot-logback.md`
+
+---
+
 ## Repository Structure
 
 ```text
@@ -62,7 +79,3 @@ scripts/
 ## Roadmap
 
 Additional benchmark applications are planned to expand LogSherlock's coverage across different languages, frameworks, and logging ecosystems.
-
-Planned benchmark applications include:
-
-* Java Spring Boot
