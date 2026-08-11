@@ -1,11 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSS} %-5level [%thread] %logger{0} application=%X{application} environment=%X{environment} schemaVersion=%X{schemaVersion} scenario=%X{scenario} reqId=%X{reqId} traceId=%X{traceId} orderId=%X{orderId} customerId=%X{customerId} productId=%X{productId} paymentId=%X{paymentId} shipmentId=%X{shipmentId} service=%X{service} component=%X{component} %msg%n</pattern>
-        </encoder>
-    </appender>
+    <!--
+        Runtime log format selection.
+
+            LOG_FORMAT=text   plaintext pattern layout (default)
+            LOG_FORMAT=json   one JSON object per log record
+
+        The value is read from the JVM system property -DLOG_FORMAT=... or, if
+        that is absent, from the LOG_FORMAT environment variable, so switching
+        the format requires no source change and no rebuild. Both console
+        definitions emit the same vocabulary with the same values; only the
+        serialization differs.
+    -->
+    <property name="benchmarkLogFormat" value="${LOG_FORMAT:-text}"/>
+
+    <include resource="logback/console-appender-${benchmarkLogFormat}.xml"/>
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
